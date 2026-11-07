@@ -3,4 +3,6 @@
     <string name="splash_header">Are You Hungry ?</string>
     <string name="splash_subtext">Burger will deliver the treat \nyour plate can\'t resist</string>
     <string name="splash_btn_text">Let\'s order a Meal</string>
+    <string name="sign_text">Sign To Continue</string>
+    <string name="guest_text">Browse as Guest</string>
 </resources>
