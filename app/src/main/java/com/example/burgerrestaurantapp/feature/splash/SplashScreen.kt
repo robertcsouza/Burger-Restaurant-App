@@ -36,16 +36,21 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.burgerrestaurantapp.R
+import com.example.burgerrestaurantapp.core.data.auth.GoogleUiClient
 import com.example.burgerrestaurantapp.ui.theme.BrandBrown
 import com.example.burgerrestaurantapp.ui.theme.BrandYellow
 import com.example.burgerrestaurantapp.ui.theme.FontSize
 import com.example.burgerrestaurantapp.ui.theme.TextWhite
 import com.example.burgerrestaurantapp.ui.theme.oswaldVariableFont
 import com.example.burgerrestaurantapp.ui.theme.sentientVariable
+import com.google.firebase.auth.FirebaseAuth
+import org.koin.compose.koinInject
 
 @Composable
-fun SplashScreen(navigateToAuth: () -> Unit) {
+fun SplashScreen(navigateToAuth: () -> Unit, navigateToHome: () -> Unit) {
     val scale = remember { Animatable(initialValue = 0f) }
+
+    val googleUiClient: GoogleUiClient = koinInject()
 
     LaunchedEffect(key1 = true, block = {
         scale.animateTo(
@@ -93,7 +98,17 @@ fun SplashScreen(navigateToAuth: () -> Unit) {
         )
 
         Spacer(Modifier.height(25.dp))
-        SplashButton(onClick = { navigateToAuth() })
+        SplashButton(onClick = {
+            val user = googleUiClient.currentUser
+
+            if (user != null) {
+                navigateToHome()
+            } else {
+                navigateToAuth()
+
+            }
+
+        })
     }
 
 }

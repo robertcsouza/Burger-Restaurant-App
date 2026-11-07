@@ -6,6 +6,7 @@ plugins {
     id("com.google.devtools.ksp")
     alias(libs.plugins.google.gms.google.services)
 
+
 }
 
 android {
@@ -64,4 +65,7 @@ dependencies {
     debugImplementation(libs.androidx.compose.ui.tooling)
     implementation(libs.koin.android)
     implementation(libs.koin.androidx.compose)
+
+    implementation(platform(libs.firebase.bom))
+
 }
