@@ -13,7 +13,7 @@ import org.koin.dsl.module
 val appModule = module {
     single<FirebaseAuth> { FirebaseAuth.getInstance() }
     single<CurstomerRepository> { CurstomerRepoImpl() }
-    viewModel { AuthViewModel(get(), auth = get()) }
+    viewModel { AuthViewModel(get()) }
     single {
         GoogleUiClient(
             context = androidContext(),

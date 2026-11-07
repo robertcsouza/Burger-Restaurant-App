@@ -16,7 +16,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
@@ -30,9 +33,11 @@ import com.example.burgerrestaurantapp.R
 import com.example.burgerrestaurantapp.core.data.auth.GoogleUiClient
 import com.example.burgerrestaurantapp.feature.components.GoogleButton
 import com.example.burgerrestaurantapp.feature.components.PrimaryButton
+import com.example.burgerrestaurantapp.feature.util.RequestState
 import com.example.burgerrestaurantapp.ui.theme.BurgerRestaurantAppTheme
 import com.example.burgerrestaurantapp.ui.theme.FontSize
 import com.example.burgerrestaurantapp.ui.theme.oswaldVariableFont
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 import org.koin.androidx.compose.koinViewModel
@@ -50,25 +55,10 @@ fun AuthScreen(navigateToHome: () -> Unit) {
 
     val googleAuthUiClient: GoogleUiClient = koinInject()
 
-    val uiEvent by authViewModel.uiEvent.collectAsStateWithLifecycle()
+    var loadingState by remember { mutableStateOf(false) }
 
-    val loading = uiEvent is AuthUiEvent.Loading
 
-    LaunchedEffect(uiEvent) {
-        when (uiEvent) {
-            is AuthUiEvent.Success -> {
-                navigateToHome()
-                authViewModel.consumeEvent()
-            }
 
-            is AuthUiEvent.Error -> {
-                authViewModel.consumeEvent()
-            }
-
-            else -> Unit
-
-        }
-    }
 
     Scaffold { paddingValues ->
         Column(
@@ -99,17 +89,28 @@ fun AuthScreen(navigateToHome: () -> Unit) {
             }
 
             GoogleButton(
-                loading = loading,
+                loading = loadingState,
                 onClick = {
                     scope.launch {
-                        authViewModel.startLoading()
+                        loadingState = true
+
                         try {
                             val authResult = googleAuthUiClient.signInWithGoogle(activity)
                             val user = authResult.user
                             if (user != null) {
-                                authViewModel.onFirebaseUserSignIn(user)
+                                authViewModel.createCustomer(
+                                    user = user,
+                                    onSuccess = {
+                                        RequestState.Success(user)
+                                    },
+                                    onError = {
+                                        RequestState.Error("Unable to create new User")
+                                    }
+                                )
+                                delay(2000)
+                                navigateToHome()
                             } else {
-                                authViewModel.emitError("Google SignIn failed")
+                                RequestState.Error("Google SignIn failed")
                             }
                         } catch (e: Exception) {
                             Log.e(
@@ -117,7 +118,7 @@ fun AuthScreen(navigateToHome: () -> Unit) {
                                 "Falha: ${e.javaClass.name} | ${e.message}",
                                 e
                             )
-                            authViewModel.emitError(e.message ?: "Sign-in Error")
+                            RequestState.Error(e.message ?: "Sign-in Error")
                         }
 
                     }
@@ -136,16 +137,26 @@ fun AuthScreen(navigateToHome: () -> Unit) {
                 onClick = {
                     scope.launch {
                         try {
-                            authViewModel.startLoading()
+
                             val guestResult = googleAuthUiClient.guestSign()
                             val user = guestResult.user
                             if (user != null) {
-                                authViewModel.onFirebaseUserSignIn(user)
+                                authViewModel.createCustomer(
+                                    user = user,
+                                    onSuccess = {
+                                        RequestState.Success(user)
+                                    },
+                                    onError = {
+                                        RequestState.Error("Unable to create new User")
+                                    }
+                                )
+                                delay(2000)
+                                navigateToHome()
                             } else {
-                                authViewModel.emitError("Guest SignIn failed")
+                                RequestState.Error("Guest SignIn failed")
                             }
                         } catch (e: Exception) {
-                            authViewModel.emitError(e.message ?: "Error  to loading as Guest")
+                            RequestState.Error(e.message ?: "Error  to loading as Guest")
                         }
                     }
                 })

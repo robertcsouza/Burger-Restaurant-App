@@ -4,5 +4,9 @@ import com.google.firebase.auth.FirebaseUser
 
 interface CurstomerRepository {
     fun getCurrentUserId(): String?
-    suspend fun createCustomer(user: FirebaseUser): Result<Unit>
+    suspend fun createCustomer(
+        user: FirebaseUser,
+        onSuccess: () -> Unit,
+        onError: (String) -> Unit
+    )
 }
