@@ -69,5 +69,7 @@ dependencies {
     implementation(platform(libs.firebase.bom))
 
     implementation("io.coil-kt.coil3:coil-network-okhttp:3.3.0")
+    implementation(libs.coil3.compose)
+    implementation(libs.coil3.network.ktor)
 
 }

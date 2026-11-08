@@ -2,9 +2,11 @@ package com.example.burgerrestaurantapp.core.data.repoImpl
 
 import com.example.burgerrestaurantapp.core.data.domain.CurstomerRepository
 import com.example.burgerrestaurantapp.core.data.models.Customer
+import com.example.burgerrestaurantapp.feature.util.RequestState
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.auth.auth
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.tasks.await
 
@@ -30,6 +32,15 @@ class CurstomerRepoImpl : CurstomerRepository {
             docRef.set(customer).await()
         }
 
+    }
+
+    override suspend fun signOut(): RequestState<Unit> {
+        return try {
+            Firebase.auth.signOut()
+            return RequestState.Success(Unit)
+        } catch (e: Exception) {
+            RequestState.Error("Error While Sign out: ${e.message}")
+        }
     }
 
 }
