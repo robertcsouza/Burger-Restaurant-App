@@ -6,6 +6,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.burgerrestaurantapp.feature.auth.AuthScreen
 import com.example.burgerrestaurantapp.feature.home.HomeScreen
+import com.example.burgerrestaurantapp.feature.profile.ProfileScreen
 import com.example.burgerrestaurantapp.feature.splash.SplashScreen
 
 @Composable
@@ -43,11 +44,24 @@ fun BurgerNavGraph(startDestination: Screens = Screens.SplashScreen) {
         }
 
         composable<Screens.HomeGraph> {
-            HomeScreen(navigateToAuth = {
-                navController.navigate(Screens.AuthScreen) {
-                    popUpTo<Screens.HomeGraph> { inclusive = true }
+            HomeScreen(
+                navigateToAuth = {
+                    navController.navigate(Screens.AuthScreen) {
+                        popUpTo<Screens.HomeGraph> { inclusive = true }
+                    }
+                },
+                navigateToProfile = {
+                    navController.navigate(Screens.Profile)
                 }
-            })
+            )
+        }
+
+        composable<Screens.Profile> {
+            ProfileScreen(
+                navigateBack = {
+                    navController.navigateUp()
+                }
+            )
         }
     }
 }

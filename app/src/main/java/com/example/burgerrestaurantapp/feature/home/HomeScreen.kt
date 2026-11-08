@@ -60,7 +60,10 @@ import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HomeScreen(navigateToAuth: () -> Unit) {
+fun HomeScreen(
+    navigateToAuth: () -> Unit,
+    navigateToProfile: () -> Unit
+) {
     val navController = rememberNavController()
     val currentRoute = navController.currentBackStackEntryAsState()
     val viewModel = koinViewModel<HomeViewModel>()
@@ -112,7 +115,7 @@ fun HomeScreen(navigateToAuth: () -> Unit) {
 
     ) {
         CustomDrawer(
-            onProfileClick = {},
+            onProfileClick = navigateToProfile,
             onContactUsClick = {},
             onSignOutClick = {
                 viewModel.signOut(
@@ -155,12 +158,30 @@ fun HomeScreen(navigateToAuth: () -> Unit) {
                             }
                         },
                         navigationIcon = {
+
                             IconButton(onClick = { drawerState = drawerState.reverse() }) {
-                                Icon(
-                                    painter = painterResource(R.drawable.menu),
-                                    contentDescription = "Menu Button",
-                                    tint = IconPrimary
-                                )
+                                AnimatedContent(
+                                    targetState = drawerState
+                                ) { drawer ->
+
+                                    if (!drawer.isOpened()) {
+                                        Icon(
+                                            painter = painterResource(R.drawable.menu),
+                                            contentDescription = "Menu Button",
+                                            tint = IconPrimary
+                                        )
+                                    } else {
+
+                                        Icon(
+                                            painter = painterResource(R.drawable.close),
+                                            contentDescription = "Menu Button",
+                                            tint = IconPrimary
+                                        )
+
+                                    }
+
+                                }
+
                             }
                         },
                         colors = TopAppBarDefaults.topAppBarColors(
@@ -223,6 +244,6 @@ fun getScreenWidth(): Float {
 @Composable
 private fun HomeScreenPreview() {
     BurgerRestaurantAppTheme() {
-        HomeScreen(navigateToAuth = {})
+        HomeScreen(navigateToAuth = {}, navigateToProfile = {})
     }
 }

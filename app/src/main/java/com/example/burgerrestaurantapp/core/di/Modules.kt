@@ -6,6 +6,7 @@ import com.example.burgerrestaurantapp.core.data.domain.CurstomerRepository
 import com.example.burgerrestaurantapp.core.data.repoImpl.CurstomerRepoImpl
 import com.example.burgerrestaurantapp.feature.auth.AuthViewModel
 import com.example.burgerrestaurantapp.feature.home.HomeViewModel
+import com.example.burgerrestaurantapp.feature.profile.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.module.dsl.viewModel
@@ -16,6 +17,7 @@ val appModule = module {
     single<CurstomerRepository> { CurstomerRepoImpl() }
     viewModel { AuthViewModel(get()) }
     viewModel { HomeViewModel(get()) }
+    viewModel { ProfileViewModel(get()) }
     single {
         GoogleUiClient(
             context = androidContext(),
