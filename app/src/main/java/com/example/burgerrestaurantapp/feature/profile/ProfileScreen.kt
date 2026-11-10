@@ -15,6 +15,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -23,6 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.example.burgerrestaurantapp.feature.components.InfoCard
 import com.example.burgerrestaurantapp.feature.components.LoadingCard
 import com.example.burgerrestaurantapp.feature.components.PrimaryButton
+import com.example.burgerrestaurantapp.feature.components.dialog.CountryPickerDialog
 import com.example.burgerrestaurantapp.feature.profile.component.ProfileForm
 import com.example.burgerrestaurantapp.feature.util.DisplayResult
 import com.example.burgerrestaurantapp.feature.util.RequestState
@@ -44,6 +49,8 @@ fun ProfileScreen(
     val screenState = profileViewModel.screenState
     val screenready = profileViewModel.screenReady
     val isFormValid = profileViewModel.isFormValid
+    val countriesState = profileViewModel.countriesState
+    var countryDialogOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Scaffold(
@@ -85,6 +92,29 @@ fun ProfileScreen(
                 .padding(paddingValues)
                 .imePadding()
         ) {
+            if (countryDialogOpen) {
+                countriesState.DisplayResult(
+                    onLoading = { LoadingCard(modifier = Modifier.fillMaxSize()) },
+                    onSuccess = { countries ->
+                        CountryPickerDialog(
+                            countries = countries,
+                            selectedCountry = screenState.country,
+                            onDismiss = { countryDialogOpen = false },
+                            onConfirmClick = { selectedCountry ->
+                                profileViewModel.updateCountry(selectedCountry)
+                                countryDialogOpen = false
+                            }
+                        )
+                    },
+                    onError = { message ->
+                        InfoCard(
+                            image = Resources.Icon.Dog,
+                            title = "Oops!",
+                            subtitle = message
+                        )
+                    }
+                )
+            }
 
             screenready.DisplayResult(
                 onLoading = { LoadingCard(modifier = Modifier.fillMaxSize()) },
@@ -107,7 +137,9 @@ fun ProfileScreen(
                             address = screenState.address,
                             onAddressChange = profileViewModel::updateAddress,
                             phoneNumber = screenState.phoneNumber?.number,
-                            onPhoneNumberChange = profileViewModel::updatePhoneNumber
+                            onPhoneNumberChange = profileViewModel::updatePhoneNumber,
+                            country = screenState.country,
+                            onCountrySelect = { countryDialogOpen = true }
                         )
                         Spacer(modifier = Modifier.height(12.dp))
                         PrimaryButton(

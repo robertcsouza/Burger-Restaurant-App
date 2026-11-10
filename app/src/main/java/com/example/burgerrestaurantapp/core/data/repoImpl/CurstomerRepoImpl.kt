@@ -2,6 +2,7 @@ package com.example.burgerrestaurantapp.core.data.repoImpl
 
 import androidx.core.app.PendingIntentCompat.send
 import com.example.burgerrestaurantapp.core.data.domain.CurstomerRepository
+import com.example.burgerrestaurantapp.core.data.models.Country
 import com.example.burgerrestaurantapp.core.data.models.Customer
 import com.example.burgerrestaurantapp.core.data.models.PhoneNumber
 import com.example.burgerrestaurantapp.feature.util.RequestState
@@ -74,6 +75,23 @@ class CurstomerRepoImpl : CurstomerRepository {
                                 }
                             }
 
+
+                            val countryMap = documentSnapshot.get("country") as? Map<*, *>
+                            val country = countryMap?.let { map ->
+                                val name = map["name"] as? String
+                                val code = map["code"] as? String
+                                val dialCode = (map["diaCode"] as? Long)?.toInt()
+                                val flagUrl = map["flagUrl"] as? String
+                                if (name != null && code != null && dialCode != null && flagUrl != null)
+                                    Country(
+                                        name = name,
+                                        code = code,
+                                        dialCode = dialCode,
+                                        flagUrl = flagUrl
+                                    )
+                                else null
+                            }
+
                             val customer = Customer(
                                 id = documentSnapshot.id,
                                 firstName = documentSnapshot.get("firstName") as String,
@@ -84,8 +102,9 @@ class CurstomerRepoImpl : CurstomerRepository {
                                 profilePictureUrl = documentSnapshot.get("photoUrl") as String?,
                                 postalCode = postalCode,
                                 phoneNumber = phoneNumber,
+                                country = country
 
-                                )
+                            )
                             send(RequestState.Success(data = customer))
                         } else {
                             send(RequestState.Error("Queried customer Document does not exist "))
@@ -121,6 +140,15 @@ class CurstomerRepoImpl : CurstomerRepository {
                         )
                     }
 
+                    val countryMap = customer.country?.let {
+                        mapOf(
+                            "name" to it.name,
+                            "code" to it.code,
+                            "dialCode" to it.dialCode,
+                            "flagUrl" to it.flagUrl
+                        )
+                    }
+
                     customerCollection
                         .document(customer.id)
                         .update(
@@ -131,6 +159,7 @@ class CurstomerRepoImpl : CurstomerRepository {
                                 "postalCode" to customer.postalCode,
                                 "address" to customer.address,
                                 "phoneNumber" to phoneNumberMap,
+                                "country" to countryMap
                             )
                         ).await()
                     onSuccess()

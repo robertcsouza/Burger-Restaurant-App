@@ -13,6 +13,7 @@ data class Customer(
     val profilePictureUrl: String? = null,
     val postalCode: Int? = null,
     val phoneNumber: PhoneNumber? = null,
+    val country: Country? = null,
     val isAdmin: Boolean = false
 )
 

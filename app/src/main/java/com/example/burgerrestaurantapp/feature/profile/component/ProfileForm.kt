@@ -3,17 +3,24 @@ package com.example.burgerrestaurantapp.feature.profile.component
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.burgerrestaurantapp.core.data.models.Country
+import com.example.burgerrestaurantapp.feature.components.BurgerSelectTextField
 
 import com.example.burgerrestaurantapp.feature.components.BurgerTextField
 
@@ -25,6 +32,8 @@ fun ProfileForm(
     lastName: String,
     onLastNameChange: (String) -> Unit,
     email: String,
+    country: Country?,
+    onCountrySelect: () -> Unit,
     city: String?,
     onCityChange: (String) -> Unit,
     postalCode: Int?,
@@ -61,6 +70,14 @@ fun ProfileForm(
             enabled = false
         )
 
+        BurgerSelectTextField(
+            modifier = Modifier.fillMaxWidth(),
+            text = country?.name ?: "",
+            iconUrl = country?.flagUrl,
+            onClick = onCountrySelect,
+            placeholder = "Country"
+        )
+
         BurgerTextField(
             value = city ?: "",
             onValueChange = onCityChange,
@@ -85,6 +102,30 @@ fun ProfileForm(
                 keyboardType = KeyboardType.Text
             )
         )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            BurgerSelectTextField(
+                modifier = Modifier.width(120.dp),
+                text = if (country?.dialCode != null) "+${country.dialCode}" else "+-",
+                iconUrl = country?.flagUrl,
+                onClick = onCountrySelect,
+                placeholder = "+-"
+            )
+            Spacer(modifier = Modifier.width(12.dp))
+            BurgerTextField(
+                modifier = Modifier.weight(1f),
+                value = phoneNumber ?: "",
+                onValueChange = onPhoneNumberChange,
+                placeholder = "Phone Number",
+                error = phoneNumber.toString().length !in 3..30,
+                keyboardOptions = KeyboardOptions(
+                    keyboardType = KeyboardType.Number
+                )
+            )
+        }
 
         BurgerTextField(
             value = phoneNumber ?: "",
