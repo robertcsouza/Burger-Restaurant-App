@@ -1,5 +1,6 @@
 package com.example.burgerrestaurantapp.feature.profile
 
+import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -15,6 +16,11 @@ import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.launch
 
+data class PhotoUploadState(
+    val isUploading: Boolean = false,
+    val progress: Float = 0f,
+    val error: String? = null
+)
 
 data class ProfileScreenState(
     val id: String = "",
@@ -42,6 +48,7 @@ class ProfileViewModel(
         private set
 
     private var countries: List<Country> = emptyList()
+    var photoState by mutableStateOf(PhotoUploadState())
     val isFormValid: Boolean
         get() = with(screenState) {
             (firstName.length in 3..50) &&
@@ -183,6 +190,40 @@ class ProfileViewModel(
                 onError = onError
             )
 
+        }
+    }
+
+    fun pickAndUploadPhoto(localUrl: Uri) {
+        viewModelScope.launch {
+            photoState = PhotoUploadState(isUploading = true, progress = 0f)
+            when (val result = customerRepository.uploadProfilePhoto(
+                localUrl = localUrl
+            ) { uploadProgress ->
+                photoState = photoState.copy(isUploading = true, progress = uploadProgress)
+            }) {
+                is RequestState.Success -> {
+                    val url = result.data
+                    when (val uploaded = customerRepository.updateProfilePictureUrl(url)) {
+                        is RequestState.Success -> {
+                            screenState = screenState.copy(profilePictureUrl = url)
+                            photoState =
+                                PhotoUploadState(isUploading = true, progress = 1f, error = null)
+                        }
+
+                        is RequestState.Error -> {
+                            photoState = PhotoUploadState(error = uploaded.message)
+                        }
+
+                        else -> Unit
+                    }
+                }
+
+                is RequestState.Error -> {
+                    photoState = PhotoUploadState(error = result.message)
+                }
+
+                else -> Unit
+            }
         }
     }
 

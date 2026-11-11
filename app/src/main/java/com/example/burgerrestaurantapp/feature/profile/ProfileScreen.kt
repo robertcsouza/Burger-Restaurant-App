@@ -1,6 +1,9 @@
 package com.example.burgerrestaurantapp.feature.profile
 
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -29,6 +32,7 @@ import com.example.burgerrestaurantapp.feature.components.LoadingCard
 import com.example.burgerrestaurantapp.feature.components.PrimaryButton
 import com.example.burgerrestaurantapp.feature.components.dialog.CountryPickerDialog
 import com.example.burgerrestaurantapp.feature.profile.component.ProfileForm
+import com.example.burgerrestaurantapp.feature.profile.component.ProfilePhotoEditor
 import com.example.burgerrestaurantapp.feature.util.DisplayResult
 import com.example.burgerrestaurantapp.feature.util.RequestState
 import com.example.burgerrestaurantapp.ui.theme.FontSize
@@ -37,6 +41,7 @@ import com.example.burgerrestaurantapp.ui.theme.Resources
 import com.example.burgerrestaurantapp.ui.theme.Surface
 import com.example.burgerrestaurantapp.ui.theme.TextPrimary
 import com.example.burgerrestaurantapp.ui.theme.oswaldVariableFont
+import com.google.firebase.auth.FirebaseAuth
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -50,8 +55,23 @@ fun ProfileScreen(
     val screenready = profileViewModel.screenReady
     val isFormValid = profileViewModel.isFormValid
     val countriesState = profileViewModel.countriesState
+    val photoState = profileViewModel.photoState
     var countryDialogOpen by remember { mutableStateOf(false) }
     val context = LocalContext.current
+
+
+    val photoPicker = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia()
+    ) { uri ->
+        if (uri != null) profileViewModel.pickAndUploadPhoto(uri)
+    }
+    val authPhotoUrl = remember {
+        FirebaseAuth.getInstance().currentUser?.photoUrl?.toString()
+    }
+    val resolvedPhotoUrl =
+        screenState.profilePictureUrl?.takeUnless { it.isBlank() } ?: authPhotoUrl
+
+
 
     Scaffold(
         containerColor = Surface,
@@ -116,6 +136,30 @@ fun ProfileScreen(
                 )
             }
 
+            if (countryDialogOpen) {
+                countriesState.DisplayResult(
+                    onLoading = { LoadingCard(modifier = Modifier.fillMaxSize()) },
+                    onSuccess = { countries ->
+                        CountryPickerDialog(
+                            countries = countries,
+                            selectedCountry = screenState.country,
+                            onDismiss = { countryDialogOpen = false },
+                            onConfirmClick = { selectedCountry ->
+                                profileViewModel.updateCountry(selectedCountry)
+                                countryDialogOpen = false
+                            }
+                        )
+                    },
+                    onError = { message ->
+                        InfoCard(
+                            image = Resources.Icon.Dog,
+                            title = "Oops!",
+                            subtitle = message
+                        )
+                    }
+                )
+            }
+
             screenready.DisplayResult(
                 onLoading = { LoadingCard(modifier = Modifier.fillMaxSize()) },
                 onSuccess = {
@@ -123,6 +167,19 @@ fun ProfileScreen(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
+
+                        Spacer(modifier = Modifier.height(8.dp))
+                        ProfilePhotoEditor(
+                            photoUrl = resolvedPhotoUrl,
+                            isUploading = photoState.isUploading,
+                            progress = photoState.progress,
+                            onPickClick = {
+                                photoPicker.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                        )
+
                         ProfileForm(
                             modifier = Modifier.weight(1f),
                             firstName = screenState.firstName,

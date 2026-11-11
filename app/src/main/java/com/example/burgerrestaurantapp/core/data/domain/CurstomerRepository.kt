@@ -1,5 +1,6 @@
 package com.example.burgerrestaurantapp.core.data.domain
 
+import android.net.Uri
 import com.example.burgerrestaurantapp.core.data.models.Customer
 import com.example.burgerrestaurantapp.feature.util.RequestState
 import com.google.firebase.auth.FirebaseUser
@@ -22,4 +23,8 @@ interface CurstomerRepository {
     )
 
     suspend fun signOut(): RequestState<Unit>
+
+    suspend fun updateProfilePictureUrl(url: String): RequestState<Unit>
+    suspend fun uploadProfilePhoto(localUrl: Uri, onProgress: (Float) -> Unit): RequestState<String>
+
 }

@@ -27,6 +27,7 @@ googleid = "1.1.1"
 firebaseFirestore = "27.1.0"
 firebaseBom = "34.8.0"
 mediationTestSuite = "3.0.0"
+firebaseStorage = "23.0.0"
 
 
 [libraries]
@@ -74,6 +75,7 @@ firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "fir
 firebase-auth = { module = "com.google.firebase:firebase-auth" }
 firebase-firestore = { module = "com.google.firebase:firebase-firestore" }
 mediation-test-suite = { group = "com.google.android.ads", name = "mediation-test-suite", version.ref = "mediationTestSuite" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
